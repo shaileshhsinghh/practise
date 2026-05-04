@@ -1,8 +1,8 @@
-const error = async(err,req,res,next)=>{
-    res.status(500).json({
-        msg:`${err.message}`
+const error = (err,req,res,next)=>{
+    const statusCode = err.statusCode || 500 ;
+    res.status(statusCode).json({
+        Error : err.message || 'Internal Server Error'
     });
-    next();
-}
+};
 
 module.exports = error;

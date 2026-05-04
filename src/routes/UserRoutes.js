@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const {testingmiddleware,createusermiddleware} = require('../middlewares/UserMiddlewares');
+const {testingmiddleware,createusermiddleware,loginmiddleware} = require('../middlewares/UserMiddlewares');
 
 router.get('/test',testingmiddleware);
 
-router.get('/create',createusermiddleware);
+router.post('/create',createusermiddleware);
+
+router.post('/login',loginmiddleware);
 
 module.exports = router; 
