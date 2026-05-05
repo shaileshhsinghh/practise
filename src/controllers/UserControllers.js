@@ -1,4 +1,5 @@
 const User = require('../models/UserSchema');
+const Todo = require('../models/todoSchema');
 const {passwordcheck} = require('../middlewares/authMiddleware');
 
 const savetodb = async(data)=>{
@@ -12,9 +13,20 @@ const login = async({username,password})=>{
         return false;
     }
     else if(passwordcheck(password,data.password)){
-        return true;
+        return {status:true,
+            data:data
+        };
     }
     return false;
 }
 
-module.exports = {savetodb,login};
+const savetodo = async(todo)=>{
+    const tododata = await Todo.create(todo);
+    return tododata;
+}
+
+const updateuser = async(userid,todoid)=>{
+    await User.findByIdAndUpdate(userid,{$push:{todos:todoid}});
+}
+
+module.exports = {savetodb,login,savetodo,updateuser};

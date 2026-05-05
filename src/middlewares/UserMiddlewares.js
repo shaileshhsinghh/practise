@@ -1,5 +1,7 @@
-const {savetodb,login} = require("../controllers/UserControllers");
+const { verify } = require("node:crypto");
+const {savetodb,login,savetodo,updateuser} = require("../controllers/UserControllers");
 const {hashPassword} = require('./authMiddleware');
+const {generatetoken,verifytoken} = require('./jwtmiddleware');
 
 const testingmiddleware = async (req, res, next) => {
   try {
@@ -39,9 +41,15 @@ const loginmiddleware = async(req,res,next)=>{
   try{
     const {username , password } = req.body;
   const check = await login({username,password});
-  if(check){
+  if(check.status){
+    const token = await generatetoken({
+      id:check.data.id,
+      username:username
+    });
     res.status(200).json({
-      msg:'User Login Succesfull'
+      msg:'User Login Succesfull',
+      data : check.data,
+      jwttoken : token
     });
   }
   else{
@@ -54,4 +62,27 @@ const loginmiddleware = async(req,res,next)=>{
   }
 }
 
-module.exports = { testingmiddleware, createusermiddleware , loginmiddleware };
+const createtodomiddleware = async(req,res,next)=>{
+  try{
+    const header = req.headers.authorization;
+    const jwttoken = header.split(" ")[1];
+    const { title } = req.body;
+    const payload = await verifytoken(jwttoken);
+    const todo = {
+      title,
+      user:payload.id
+    }
+    const saveddata = await savetodo(todo);
+
+    await updateuser(payload.id,saveddata.id);
+
+     res.status(201).json({
+      msg: "Todo created",
+      data: saveddata,
+    });
+  }catch(err){
+    next(err);
+  }
+}
+
+module.exports = { testingmiddleware, createusermiddleware , loginmiddleware , createtodomiddleware};
